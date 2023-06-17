@@ -94,7 +94,7 @@ int main(int argc, char** argv){
     result = ma_node_attach_output_bus(&sound, 0, node, 0);
     if(result != MA_SUCCESS){
     	printf("failed to attach node to output bus\n");
-	    return -1;
+        return -1;
     }
 
     /*TODO: research what the fence does, seems to clip higher frequencies...*/
@@ -107,7 +107,7 @@ int main(int argc, char** argv){
     result = ma_sound_start(&sound);
     if (result != MA_SUCCESS) {
         printf("failed to start sound\n");
-	      return -1;
+        return -1;
     }
     printf("playing...");
     
