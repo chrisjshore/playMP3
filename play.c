@@ -4,6 +4,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <math.h>
 
 struct termios origterm;
 
@@ -18,37 +19,37 @@ void usage(){
 }
 
 void reset_terminal(){
-  tcsetattr(STDIN_FILENO, TCSANOW, &origterm);
-  printf("\n");
+    tcsetattr(STDIN_FILENO, TCSANOW, &origterm);
+    printf("\n");
 }
 
 void* command_thread(void* sound){
-  ma_sound* pSound = sound;
-  char c;
+    ma_sound* pSound = sound;
+    char c;
 
-  while(!pSound->atEnd){
-    c = getchar();
+    while(!pSound->atEnd){
+        c = getchar();
 	  
-	  switch(c) {
-	    case 'q': {
-		    ma_sound_stop(pSound);
-		    putchar(c);
-        /*potential memory leak since we don't uninit the engine before exiting*/
-        /*TODO: get pSound's engine and uninit*/
-        exit(0);
-	    }
-	    case ' ': {
-		    if(ma_sound_is_playing(pSound)){
-		      ma_sound_stop(pSound);
-		    }
-		    else {
-		      ma_sound_start(pSound);
-		    }
-		    break;
-	    }
+        switch(c) {
+            case 'q': {
+                ma_sound_stop(pSound);
+                putchar(c);
+                /*potential memory leak since we don't uninit the engine before exiting*/
+                /*TODO: get pSound's engine and uninit*/
+                exit(0);
+            }
+            case ' ': {
+                if(ma_sound_is_playing(pSound)){
+                    ma_sound_stop(pSound);
+                }
+                else {
+                    ma_sound_start(pSound);
+                }
+                break;
+            }
+        }
     }
-  }
-  pthread_exit(0);
+    pthread_exit(0);
 }
 
 int main(int argc, char** argv){
@@ -57,6 +58,7 @@ int main(int argc, char** argv){
     ma_sound  sound;
     ma_uint32 soundFlags;
     ma_node*  node;
+    ma_uint64 frameLength;
     //ma_fence fence;
     static struct termios newterm;
 
@@ -119,9 +121,12 @@ int main(int argc, char** argv){
     pthread_t cmdThread;
     pthread_create(&cmdThread, NULL, &command_thread, &sound);
 
-    while(!sound.atEnd){
-      sleep(2);
-    }
+    int rate = ma_engine_get_sample_rate(&engine);
+    ma_sound_get_length_in_pcm_frames(&sound, &frameLength);
+
+    float sound_length = (float)frameLength / (float)rate;
+    int seconds = (int)ceilf(sound_length);
+    sleep(seconds);
 
     /*if we get this far then cancel the other thread*/
     pthread_cancel(cmdThread);
