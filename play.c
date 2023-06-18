@@ -4,7 +4,6 @@
 #include <termios.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <math.h>
 
 struct termios origterm;
 
@@ -75,6 +74,7 @@ int main(int argc, char** argv){
 
     result = ma_engine_init(NULL, &engine);
     if(result != MA_SUCCESS){
+        printf("failed to init engine\n");
         return -1;
     }
 
@@ -110,7 +110,18 @@ int main(int argc, char** argv){
         return -1;
     }
     printf("playing...");
-    
+
+    int rate = ma_engine_get_sample_rate(&engine);
+    result = ma_sound_get_length_in_pcm_frames(&sound, &frameLength);
+    if (result != MA_SUCCESS) {
+        printf("failed to get length in pcm frames\n");
+        return -1;
+    }
+
+    float sound_length = (float)frameLength / (float)rate;
+    int   seconds = (int)sound_length;
+    float useconds = sound_length - seconds;
+
     /*doing some terminal magic so we don't have to press enter for commands to get caught*/
     tcgetattr(STDIN_FILENO, &origterm);
     atexit(reset_terminal);
@@ -121,12 +132,8 @@ int main(int argc, char** argv){
     pthread_t cmdThread;
     pthread_create(&cmdThread, NULL, &command_thread, &sound);
 
-    int rate = ma_engine_get_sample_rate(&engine);
-    ma_sound_get_length_in_pcm_frames(&sound, &frameLength);
-
-    float sound_length = (float)frameLength / (float)rate;
-    int seconds = (int)ceilf(sound_length);
     sleep(seconds);
+    usleep((int)(useconds*1000000));
 
     /*if we get this far then cancel the other thread*/
     pthread_cancel(cmdThread);
