@@ -58,7 +58,6 @@ int main(int argc, char** argv){
     ma_uint32 soundFlags;
     ma_node*  node;
     ma_uint64 frameLength;
-    //ma_fence fence;
     static struct termios newterm;
 
     if(argc < 2){
@@ -96,13 +95,6 @@ int main(int argc, char** argv){
     	printf("failed to attach node to output bus\n");
         return -1;
     }
-
-    /*TODO: research what the fence does, seems to clip higher frequencies...*/
-    //result = ma_fence_init(&fence);
-    //if(result != MA_SUCCESS){
-    //    printf("failed to init fence\n");
-    //}    
-    //ma_fence_wait(&fence);
 
     result = ma_sound_start(&sound);
     if (result != MA_SUCCESS) {
