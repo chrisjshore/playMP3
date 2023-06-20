@@ -32,9 +32,9 @@ void* command_thread(void* sound){
         switch(c) {
             case 'q': {
                 ma_sound_stop(pSound);
+                ma_engine* engine = ma_sound_get_engine(pSound);
+                ma_engine_uninit(engine);
                 putchar(c);
-                /*potential memory leak since we don't uninit the engine before exiting*/
-                /*TODO: get pSound's engine and uninit*/
                 exit(0);
             }
             case ' ': {
