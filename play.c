@@ -52,6 +52,7 @@ void* command_thread(void* sound){
 }
 
 int main(int argc, char** argv){
+    char*     path;
     ma_result result;
     ma_engine engine;
     ma_sound  sound;
@@ -71,6 +72,8 @@ int main(int argc, char** argv){
         return 0;
     }
 
+    path = argv[1];
+
     result = ma_engine_init(NULL, &engine);
     if(result != MA_SUCCESS){
         printf("failed to init engine\n");
@@ -79,12 +82,13 @@ int main(int argc, char** argv){
 
     node = ma_node_graph_get_endpoint(&engine.nodeGraph);
 
+    soundFlags |= MA_SOUND_FLAG_DECODE;
     soundFlags |= MA_SOUND_FLAG_ASYNC;
     soundFlags |= MA_SOUND_FLAG_NO_DEFAULT_ATTACHMENT;
     soundFlags |= MA_SOUND_FLAG_NO_PITCH;
     soundFlags |= MA_SOUND_FLAG_NO_SPATIALIZATION;
     
-    result = ma_sound_init_from_file(&engine, argv[1], soundFlags, NULL, NULL, &sound);
+    result = ma_sound_init_from_file(&engine, path, soundFlags, NULL, NULL, &sound);
     if (result != MA_SUCCESS) {
         printf("failed to init file\n");
         return -1;
